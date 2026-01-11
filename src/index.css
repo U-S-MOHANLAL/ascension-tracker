@@ -133,3 +133,9 @@
   font-size: 24px;
   color: white;
 }
+
+.data-\[state\=checked\]\:bg-primary {
+&[data-state="checked"] {
+    background-color: rgb(0, 142, 0);
+}
+}
