@@ -1,9 +1,7 @@
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
-  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
@@ -21,11 +19,26 @@ import {
 } from "./components/ui/select";
 
 import { Checkbox } from "./components/ui/checkbox";
-
-const activities = ["Sleeping", "Eating", "Training", "Meditation", "Reading"];
+import { Button } from "./components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
+} from "./components/ui/dialog";
+import { Input } from "./components/ui/input";
+import { Form, FormControl, FormField, FormItem } from "./components/ui/form";
+import { useForm } from "react-hook-form";
 
 export default function App() {
   const [columnType, setColumnType] = useState("weekly");
+  const [activities, addActivities] = useState([]);
+  const form = useForm({
+    defaultValues: {
+      activityName: "",
+    },
+  });
   const columnData = {
     weekly: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
     monthly: [
@@ -34,21 +47,92 @@ export default function App() {
     ],
   };
 
+  const onSubmit = (data) => {
+    addActivities([...activities, data.activityName]);
+    form.reset();
+  };
+
+  const operateActivity = (value, index, isDelete) => {
+    const data = [...activities];
+    if (isDelete) {
+      data.splice(index, 1)
+    } else {
+      data[index] = value;
+    }
+    addActivities(data);
+    console.log(value, index);
+  }
+
   return (
     <>
       <Header />
       <div className="justify-items-end m-5">
-        <Select onValueChange={setColumnType} defaultValue="weekly">
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="View Type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectItem value="weekly">Weekly</SelectItem>
-              <SelectItem value="monthly">Monthly</SelectItem>
-            </SelectGroup>
-          </SelectContent>
-        </Select>
+        <div className="flex">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button className="mr-4">+ Activity</Button>
+            </DialogTrigger>
+            <DialogContent className="w-[410px]">
+              <DialogTitle>Add Activity</DialogTitle>
+              <DialogDescription>
+                Please add your activity to track here.
+              </DialogDescription>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="flex">
+                  <FormField
+                    name="activityName"
+                    control={form.control}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input
+                            placeholder="Activity Name"
+                            className="w-[290px]"
+                            {...field}
+                          ></Input>
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <Button type="submit" className="ml-5">
+                    Add
+                  </Button>
+                </form>
+              </Form>
+              {
+                activities?.map((activity, index) => (
+                  <div className="flex" key={activity}>
+                    <Input
+                      defaultValue={activity}
+                      key={activity}
+                      onChange={() => {
+                        operateActivity(event.target.value, index);
+                      }}
+                    ></Input>
+                    <Button
+                      className="w-[58px] ml-4 bg-red-700"
+                      onClick={() => {
+                        operateActivity(undefined, index, true);
+                      }}
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                ))}
+            </DialogContent>
+          </Dialog>
+          <Select onValueChange={setColumnType} defaultValue="weekly">
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="View Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectItem value="weekly">Weekly</SelectItem>
+                <SelectItem value="monthly">Monthly</SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
       <Table>
         <TableHeader>
@@ -63,11 +147,13 @@ export default function App() {
           {activities.map((activity) => (
             <TableRow key={activity}>
               <TableCell>{activity}</TableCell>
-              {
-                columnData[columnType].map((col) => {
-                  return <TableCell key={col}><Checkbox className="ml-1"></Checkbox></TableCell>;
-                })
-              }
+              {columnData[columnType].map((col) => {
+                return (
+                  <TableCell key={col}>
+                    <Checkbox className="ml-1"></Checkbox>
+                  </TableCell>
+                );
+              })}
             </TableRow>
           ))}
         </TableBody>
