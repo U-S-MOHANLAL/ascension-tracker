@@ -32,11 +32,11 @@ import { Form, FormControl, FormField, FormItem } from "./components/ui/form";
 import { useForm } from "react-hook-form";
 
 import DeleteIcon from "./assets/delete-1487-svgrepo-com.svg";
-import CheckIcon from "./assets/check-svgrepo-com.svg";
 
 export default function App() {
   const [columnType, setColumnType] = useState("weekly");
-  const [activities, addActivities] = useState([]);
+  const storage = localStorage.getItem('activities') ? localStorage.getItem('activities').split(',') : []
+  const [activities, addActivities] = useState(storage);
   const form = useForm({
     defaultValues: {
       activityName: "",
@@ -50,10 +50,9 @@ export default function App() {
     ],
   };
 
-  const [tempInput, setTempInput] = useState("");
-
   const onSubmit = (data) => {
     addActivities([...activities, data.activityName]);
+    localStorage.setItem('activities', [...activities, data.activityName])
     form.reset();
   };
 
@@ -65,6 +64,7 @@ export default function App() {
       data[index] = value;
     }
     addActivities(data);
+    localStorage.setItem('activities', data)
   };
 
   return (
@@ -106,20 +106,11 @@ export default function App() {
               {activities?.map((activity, index) => (
                 <div className="flex" key={activity}>
                   <Input
+                    className="w-[230px]"
                     defaultValue={activity}
                     key={activity}
-                    onChange={() => {
-                      setTempInput(event.target.value);
-                    }}
+                    disabled
                   ></Input>
-                  <Button
-                    className="w-[48px] ml-3"
-                    onClick={() => {
-                      operateActivity(tempInput, index);
-                    }}
-                  >
-                    <img src={CheckIcon}></img>
-                  </Button>
                   <Button
                     className="w-[48px] ml-3"
                     onClick={() => {
