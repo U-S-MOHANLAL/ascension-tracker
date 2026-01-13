@@ -31,6 +31,9 @@ import { Input } from "./components/ui/input";
 import { Form, FormControl, FormField, FormItem } from "./components/ui/form";
 import { useForm } from "react-hook-form";
 
+import DeleteIcon from "./assets/delete-1487-svgrepo-com.svg";
+import CheckIcon from "./assets/check-svgrepo-com.svg";
+
 export default function App() {
   const [columnType, setColumnType] = useState("weekly");
   const [activities, addActivities] = useState([]);
@@ -47,6 +50,8 @@ export default function App() {
     ],
   };
 
+  const [tempInput, setTempInput] = useState("");
+
   const onSubmit = (data) => {
     addActivities([...activities, data.activityName]);
     form.reset();
@@ -55,13 +60,12 @@ export default function App() {
   const operateActivity = (value, index, isDelete) => {
     const data = [...activities];
     if (isDelete) {
-      data.splice(index, 1)
+      data.splice(index, 1);
     } else {
       data[index] = value;
     }
     addActivities(data);
-    console.log(value, index);
-  }
+  };
 
   return (
     <>
@@ -99,26 +103,33 @@ export default function App() {
                   </Button>
                 </form>
               </Form>
-              {
-                activities?.map((activity, index) => (
-                  <div className="flex" key={activity}>
-                    <Input
-                      defaultValue={activity}
-                      key={activity}
-                      onChange={() => {
-                        operateActivity(event.target.value, index);
-                      }}
-                    ></Input>
-                    <Button
-                      className="w-[58px] ml-4 bg-red-700"
-                      onClick={() => {
-                        operateActivity(undefined, index, true);
-                      }}
-                    >
-                      Delete
-                    </Button>
-                  </div>
-                ))}
+              {activities?.map((activity, index) => (
+                <div className="flex" key={activity}>
+                  <Input
+                    defaultValue={activity}
+                    key={activity}
+                    onChange={() => {
+                      setTempInput(event.target.value);
+                    }}
+                  ></Input>
+                  <Button
+                    className="w-[48px] ml-3"
+                    onClick={() => {
+                      operateActivity(tempInput, index);
+                    }}
+                  >
+                    <img src={CheckIcon}></img>
+                  </Button>
+                  <Button
+                    className="w-[48px] ml-3"
+                    onClick={() => {
+                      operateActivity(undefined, index, true);
+                    }}
+                  >
+                    <img src={DeleteIcon}></img>
+                  </Button>
+                </div>
+              ))}
             </DialogContent>
           </Dialog>
           <Select onValueChange={setColumnType} defaultValue="weekly">
