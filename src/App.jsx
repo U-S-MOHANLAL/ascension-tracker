@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/table";
 
 import Header from "./components/Header";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Select,
   SelectContent,
@@ -34,23 +34,40 @@ import { useForm } from "react-hook-form";
 import DeleteIcon from "./assets/delete-1487-svgrepo-com.svg";
 
 export default function App() {
-  console.log(((new Date).getMonth()))
   const [columnType, setColumnType] = useState("weekly");
-  const storage = localStorage.getItem('activities') ? localStorage.getItem('activities').split(',') : []
+  const storage = localStorage.getItem("activities")
+    ? localStorage.getItem("activities").split(",")
+    : [];
   const [activities, addActivities] = useState(storage);
   const form = useForm({
     defaultValues: {
       activityName: "",
     },
   });
-  const columnData = {
-    weekly: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
-    monthly: constants.MONTHLY_CALANDER[new Date().getMonth()]
+
+  const getCurrentMonthDays = () => {
+    const date = new Date()
+    const month = date.getMonth();
+    const year = date.getFullYear();
+    let currentMonthDays = [...constants.MONTHLY_CALANDER[month]];
+    if (month === 1) {
+      if ((year % 4 === 0 && year % 100 != 0) || year % 400 === 0) {
+        currentMonthDays.push(29);
+      }
+    }
+    return currentMonthDays;
   };
+  const columnData = useMemo(
+    () => ({
+      weekly: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+      monthly: getCurrentMonthDays(),
+    }),
+    []
+  );
 
   const onSubmit = (data) => {
     addActivities([...activities, data.activityName]);
-    localStorage.setItem('activities', [...activities, data.activityName])
+    localStorage.setItem("activities", [...activities, data.activityName]);
     form.reset();
   };
 
@@ -62,7 +79,7 @@ export default function App() {
       data[index] = value;
     }
     addActivities(data);
-    localStorage.setItem('activities', data)
+    localStorage.setItem("activities", data);
   };
 
   return (
@@ -150,7 +167,7 @@ export default function App() {
               {columnData[columnType].map((col) => {
                 return (
                   <TableCell key={col}>
-                    <Checkbox className="ml-1"></Checkbox>
+                    <Checkbox></Checkbox>
                   </TableCell>
                 );
               })}
