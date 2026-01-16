@@ -1,3 +1,4 @@
+import constants from "./constants";
 import {
   Table,
   TableBody,
@@ -30,10 +31,10 @@ import {
 import { Input } from "./components/ui/input";
 import { Form, FormControl, FormField, FormItem } from "./components/ui/form";
 import { useForm } from "react-hook-form";
-
 import DeleteIcon from "./assets/delete-1487-svgrepo-com.svg";
 
 export default function App() {
+  console.log(((new Date).getMonth()))
   const [columnType, setColumnType] = useState("weekly");
   const storage = localStorage.getItem('activities') ? localStorage.getItem('activities').split(',') : []
   const [activities, addActivities] = useState(storage);
@@ -44,10 +45,7 @@ export default function App() {
   });
   const columnData = {
     weekly: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
-    monthly: [
-      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
-      22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
-    ],
+    monthly: constants.MONTHLY_CALANDER[new Date().getMonth()]
   };
 
   const onSubmit = (data) => {
