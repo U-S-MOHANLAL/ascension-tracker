@@ -35,8 +35,8 @@ import DeleteIcon from "./assets/delete-1487-svgrepo-com.svg";
 
 export default function App() {
   const [columnType, setColumnType] = useState("weekly");
-  const storage = localStorage.getItem("activities")
-    ? localStorage.getItem("activities").split(",")
+  const storage = JSON.parse(localStorage.getItem("activities"))
+    ? JSON.parse(localStorage.getItem("activities"))
     : [];
   const [activities, addActivities] = useState(storage);
   const form = useForm({
@@ -45,6 +45,7 @@ export default function App() {
     },
   });
 
+  let record = {}
   const getCurrentMonthDays = () => {
     const date = new Date()
     const month = date.getMonth();
@@ -67,7 +68,7 @@ export default function App() {
 
   const onSubmit = (data) => {
     addActivities([...activities, data.activityName]);
-    localStorage.setItem("activities", [...activities, data.activityName]);
+    localStorage.setItem("activities", JSON.stringify ([...activities, data.activityName]));
     form.reset();
   };
 
@@ -79,8 +80,24 @@ export default function App() {
       data[index] = value;
     }
     addActivities(data);
-    localStorage.setItem("activities", data);
+    localStorage.setItem("activities", JSON.stringify(data));
   };
+
+  const updateRecord = (check, activity, date) => {
+    const dateClass = new Date()
+    const checkList = []
+    checkList[date - 1] = check
+    record = [{
+      year: dateClass.getFullYear(),
+      detail: [
+        {
+          month: dateClass.getMonth() + 1,
+          activity,
+          checkList
+        }
+      ]
+    }]
+  }
 
   return (
     <>
@@ -167,7 +184,7 @@ export default function App() {
               {columnData[columnType].map((col) => {
                 return (
                   <TableCell key={col}>
-                    <Checkbox></Checkbox>
+                    <Checkbox onCheckedChange={(val)=>{updateRecord(val, activity, col)}}></Checkbox>
                   </TableCell>
                 );
               })}
