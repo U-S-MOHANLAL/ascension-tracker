@@ -32,7 +32,6 @@ import { Input } from "./components/ui/input";
 import { Form, FormControl, FormField, FormItem } from "./components/ui/form";
 import { useForm } from "react-hook-form";
 import DeleteIcon from "./assets/delete-1487-svgrepo-com.svg";
-import _ from "lodash";
 export default function App() {
   const [columnType, setColumnType] = useState("monthly");
   const storage = JSON.parse(localStorage.getItem("activities"))
