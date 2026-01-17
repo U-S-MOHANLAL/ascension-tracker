@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/table";
 
 import Header from "./components/Header";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   Select,
   SelectContent,
@@ -32,9 +32,9 @@ import { Input } from "./components/ui/input";
 import { Form, FormControl, FormField, FormItem } from "./components/ui/form";
 import { useForm } from "react-hook-form";
 import DeleteIcon from "./assets/delete-1487-svgrepo-com.svg";
-
+import _ from "lodash";
 export default function App() {
-  const [columnType, setColumnType] = useState("weekly");
+  const [columnType, setColumnType] = useState("monthly");
   const storage = JSON.parse(localStorage.getItem("activities"))
     ? JSON.parse(localStorage.getItem("activities"))
     : [];
@@ -45,9 +45,9 @@ export default function App() {
     },
   });
 
-  let record = {}
+  let [record, updateRecords] = useState(JSON.parse(localStorage.getItem("record")) ?? {});
   const getCurrentMonthDays = () => {
-    const date = new Date()
+    const date = new Date();
     const month = date.getMonth();
     const year = date.getFullYear();
     let currentMonthDays = [...constants.MONTHLY_CALANDER[month]];
@@ -58,6 +58,7 @@ export default function App() {
     }
     return currentMonthDays;
   };
+
   const columnData = useMemo(
     () => ({
       weekly: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
@@ -68,7 +69,10 @@ export default function App() {
 
   const onSubmit = (data) => {
     addActivities([...activities, data.activityName]);
-    localStorage.setItem("activities", JSON.stringify ([...activities, data.activityName]));
+    localStorage.setItem(
+      "activities",
+      JSON.stringify([...activities, data.activityName])
+    );
     form.reset();
   };
 
@@ -84,20 +88,58 @@ export default function App() {
   };
 
   const updateRecord = (check, activity, date) => {
-    const dateClass = new Date()
-    const checkList = []
-    checkList[date - 1] = check
-    record = [{
-      year: dateClass.getFullYear(),
-      detail: [
-        {
-          month: dateClass.getMonth() + 1,
+    const dateClass = new Date();
+    const checkList = [];
+    checkList[date - 1] = check;
+    if (record.length) {
+      const data = [...record]
+      const currentYearRecord = data.find(
+        (x) => x.year === dateClass.getFullYear()
+      );
+      const currentMonthRecord = currentYearRecord.details.find(
+        (x) => x.month === dateClass.getMonth() && x.activity === activity
+      );
+      if (currentMonthRecord) {
+        currentMonthRecord.checkList[date - 1] = check;
+      } else {
+        currentYearRecord.details.push({
+          month: dateClass.getMonth(),
           activity,
-          checkList
-        }
-      ]
-    }]
-  }
+          checkList,
+        });
+      }
+      updateRecords(data)
+    } else {
+      updateRecords([
+        {
+          year: dateClass.getFullYear(),
+          details: [
+            {
+              month: dateClass.getMonth(),
+              activity,
+              checkList,
+            },
+          ],
+        },
+      ])
+    }
+    localStorage.setItem("record", JSON.stringify(record));
+  };
+
+  const checkProvider = useCallback((activity, col) => {
+    const dateClass = new Date();
+    if (record.length) {
+      const currentYearRecord = record.find(
+        (x) => x.year === dateClass.getFullYear()
+      );
+      const currentMonthRecord = currentYearRecord.details.find(
+        (x) => x.month === dateClass.getMonth() && x.activity === activity
+      );
+      if (currentMonthRecord) {
+        return currentMonthRecord.checkList[col - 1];
+      }
+    }
+  }, [record]);
 
   return (
     <>
@@ -155,7 +197,7 @@ export default function App() {
               ))}
             </DialogContent>
           </Dialog>
-          <Select onValueChange={setColumnType} defaultValue="weekly">
+          <Select onValueChange={setColumnType} defaultValue="monthly">
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="View Type" />
             </SelectTrigger>
@@ -184,7 +226,12 @@ export default function App() {
               {columnData[columnType].map((col) => {
                 return (
                   <TableCell key={col}>
-                    <Checkbox onCheckedChange={(val)=>{updateRecord(val, activity, col)}}></Checkbox>
+                    <Checkbox
+                      checked={checkProvider(activity, col)}
+                      onCheckedChange={(val) => {
+                        updateRecord(val, activity, col);
+                      }}
+                    ></Checkbox>
                   </TableCell>
                 );
               })}
