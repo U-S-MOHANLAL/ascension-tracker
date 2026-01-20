@@ -1,5 +1,6 @@
-import * as React from "react";
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
+import { Calendar } from "@/components/ui/calendar";
+import { addDays } from "date-fns";
 
 import {
   Card,
@@ -32,6 +33,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
+import { useState } from "react";
 
 export const description = "An interactive area chart";
 
@@ -144,7 +146,20 @@ const chartConfig = {
 };
 
 export default function ChartAreaInteractive() {
-  const [timeRange, setTimeRange] = React.useState("90d");
+  const date = new Date
+  const [dateRange, setDateRange] = useState({ from: date, to: date });
+  const [timeRange, setTimeRange] = useState("90d");
+  const processDashboard = () => {
+
+  }
+  const processChartData = () => {
+    let record = localStorage.getItem('record')
+    if (record){
+      record = JSON.parse(record)   
+      // Yet to fill
+    }
+  }
+  processChartData()
 
   const filteredData = chartData.filter((item) => {
     const date = new Date(item.date);
@@ -168,17 +183,33 @@ export default function ChartAreaInteractive() {
             <DialogTrigger asChild>
               <Button> Select Range </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-[550px]">
               <DialogHeader>
                 <DialogTitle>Select Date Range</DialogTitle>
               </DialogHeader>
               <div className="flex">
-                <Input disabled className="ml-3 mr-3"></Input>
+                <Input disabled className="ml-3 mr-3" value={new Intl.DateTimeFormat('en-GB').format(new Date(dateRange.from))}></Input>
                 <p className="mt-1">-</p>
-                <Input disabled className="ml-3 mr-3"></Input>
+                <Input disabled className="ml-3 mr-3" value={new Intl.DateTimeFormat('en-GB').format(new Date(dateRange.to))}></Input>
+              </div>
+              <div className="flex">
+                <Card className="mx-auto w-fit p-0">
+                <CardContent className="p-0">
+                  <Calendar
+                    mode="range"
+                    defaultMonth={dateRange?.from}
+                    selected={dateRange}
+                    onSelect={setDateRange}
+                    numberOfMonths={2}
+                    disabled={(date) =>
+                      date > new Date() || date < new Date("2025-01-01")
+                    }
+                  />
+                </CardContent>
+              </Card>
               </div>
               <DialogClose asChild>
-                <Button>Go</Button>
+                <Button onClick={()=> {processDashboard}}>Go</Button>
               </DialogClose>
             </DialogContent>
           </Dialog>
