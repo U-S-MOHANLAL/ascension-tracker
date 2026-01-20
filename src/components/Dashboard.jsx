@@ -24,6 +24,14 @@ import {
 } from "@/components/ui/select";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
+import {
+  DialogClose,
+  DialogHeader,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogTrigger,
+} from "./ui/dialog";
 
 export const description = "An interactive area chart";
 
@@ -156,10 +164,24 @@ export default function ChartAreaInteractive() {
     <div>
       <div className="justify-items-end m-5">
         <div className="flex">
-          <Input disabled className="ml-3 mr-3"></Input>
-          <p className="mt-1">-</p>
-          <Input disabled className="ml-3 mr-3"></Input>
-          <Button> Select Range </Button>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button> Select Range </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Select Date Range</DialogTitle>
+              </DialogHeader>
+              <div className="flex">
+                <Input disabled className="ml-3 mr-3"></Input>
+                <p className="mt-1">-</p>
+                <Input disabled className="ml-3 mr-3"></Input>
+              </div>
+              <DialogClose asChild>
+                <Button>Go</Button>
+              </DialogClose>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
       <Card className="pt-0">
