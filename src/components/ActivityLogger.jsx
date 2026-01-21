@@ -47,7 +47,7 @@ export default function ActivityLogger() {
     },
   });
 
-  let [record, updateRecords] = useState(JSON.parse(localStorage.getItem("record")) ?? {});
+  let [record, updateRecords] = useState(JSON.parse(localStorage.getItem("record")) ?? []);
   const getCurrentMonthDays = () => {
     let currentMonthDays = [...constants.MONTHLY_CALANDER[currentMonth]];
     if (currentMonth === 1) {
