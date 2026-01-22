@@ -15,13 +15,6 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import {
@@ -39,15 +32,8 @@ export const description = "An interactive area chart";
 const chartData = [];
 
 const chartConfig = {
-  visitors: {
-    label: "Visitors",
-  },
-  desktop: {
-    label: "Desktop",
-    color: "var(--chart-1)",
-  },
-  mobile: {
-    label: "Mobile",
+  activities: {
+    label: "activities",
     color: "var(--chart-2)",
   },
 };
@@ -55,51 +41,53 @@ const chartConfig = {
 export default function ChartAreaInteractive() {
   const date = new Date();
   const [dateRange, setDateRange] = useState({ from: date, to: date });
-  const [timeRange, setTimeRange] = useState("90d");
-  const processDashboard = () => {};
-  const processChartData = () => {
-    const data = new Map()
-    let records = localStorage.getItem("record");
-    if (records) {
-      records = JSON.parse(records)
-      records.forEach((record) => {
-        console.log(record)
-        record.details.forEach((detail) => {
-          detail.checkList.forEach((check, index) => {
-            if (check) {
-              const formattedDate = getFormattedDate(record.year, detail.month, index + 1)
-              if(data.get(formattedDate)){
-                const count = data.get(formattedDate) + 1
-                data.set(formattedDate, count)
-              } else {
-                data.set(formattedDate, 1)
-              }
-            }})
-        })
-      })
-      for (const date of data.keys()){
-        chartData.push({date, Activities: data.get(date)})
+  const [filteredData, setFilteredData] = useState(chartData);
+  const prepareChartData = () => {
+    const data = new Map();
+    const recordsRaw = localStorage.getItem("record");
+    if (!recordsRaw) return;
+    const records = JSON.parse(recordsRaw);
+    for (const record of records) {
+      for (const detail of record.details) {
+        detail.checkList.forEach((check, dayIndex) => {
+          const date = getFormattedDate(
+            record.year,
+            detail.month,
+            dayIndex + 1,
+          );
+          if (!check) {
+            data.set(date, (data.get(date) || 0) + 1);
+          } else {
+            data.set(date, 0);
+          }
+        });
       }
     }
+    chartData.push(
+      ...Array.from(data, ([date, activities]) => ({ date, activities })),
+    );
   };
   const getFormattedDate = (year, month, day) => {
     return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
   };
-  processChartData();
+  prepareChartData();
 
-  const filteredData = chartData.filter((item) => {
-    const date = new Date(item.date);
-    const referenceDate = new Date("2024-06-30");
-    let daysToSubtract = 90;
-    if (timeRange === "30d") {
-      daysToSubtract = 30;
-    } else if (timeRange === "7d") {
-      daysToSubtract = 7;
+  const processChartData = () => {
+    // Process chart data based on selected date range
+    if (dateRange.to && dateRange.from) {
+      // Filter chartData based on dateRange
+      const filteredData = chartData.filter((dataPoint) => {
+        const dataDate = new Date(dataPoint.date);
+        console.log(dataDate);
+        return (
+          dataDate >= new Date(dateRange.from) &&
+          dataDate <= new Date(dateRange.to)
+        );
+      });
+      setFilteredData(filteredData);
+      console.log("Filtered Data:", filteredData);
     }
-    const startDate = new Date(referenceDate);
-    startDate.setDate(startDate.getDate() - daysToSubtract);
-    return date >= startDate;
-  });
+  };
 
   return (
     <div>
@@ -149,7 +137,7 @@ export default function ChartAreaInteractive() {
               <DialogClose asChild>
                 <Button
                   onClick={() => {
-                    processDashboard;
+                    processChartData();
                   }}
                 >
                   Go
@@ -187,15 +175,15 @@ export default function ChartAreaInteractive() {
                     stopOpacity={0.1}
                   />
                 </linearGradient>
-                <linearGradient id="fillMobile" x1="0" y1="0" x2="0" y2="1">
+                <linearGradient id="fillActivities" x1="0" y1="0" x2="0" y2="1">
                   <stop
                     offset="5%"
-                    stopColor="var(--color-mobile)"
+                    stopColor="var(--color-activities)"
                     stopOpacity={0.8}
                   />
                   <stop
                     offset="95%"
-                    stopColor="var(--color-mobile)"
+                    stopColor="var(--color-activities)"
                     stopOpacity={0.1}
                   />
                 </linearGradient>
@@ -230,10 +218,10 @@ export default function ChartAreaInteractive() {
                 }
               />
               <Area
-                dataKey="Activities"
+                dataKey="activities"
                 type="natural"
-                fill="url(#fillMobile)"
-                stroke="var(--color-mobile)"
+                fill="url(#fillActivities)"
+                stroke="var(--color-activities)"
                 stackId="a"
               />
               <ChartLegend content={<ChartLegendContent />} />
