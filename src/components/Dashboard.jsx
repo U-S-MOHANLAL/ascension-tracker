@@ -25,11 +25,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export const description = "An interactive area chart";
 
-const chartData = [];
+let chartData = [];
 
 const chartConfig = {
   activities: {
@@ -55,7 +55,7 @@ export default function ChartAreaInteractive() {
             detail.month,
             dayIndex + 1,
           );
-          if (!check) {
+          if (check) {
             data.set(date, (data.get(date) || 0) + 1);
           } else {
             data.set(date, 0);
@@ -63,31 +63,42 @@ export default function ChartAreaInteractive() {
         });
       }
     }
-    chartData.push(
-      ...Array.from(data, ([date, activities]) => ({ date, activities })),
-    );
+    chartData = Array.from(data, ([date, activities]) => ({
+      date,
+      activities,
+    }));
+    setFilteredData(chartData);
   };
   const getFormattedDate = (year, month, day) => {
     return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
   };
-  prepareChartData();
 
+  useEffect(() => {
+    prepareChartData();
+  }, []);
   const processChartData = () => {
     // Process chart data based on selected date range
     if (dateRange.to && dateRange.from) {
       // Filter chartData based on dateRange
-      const filteredData = chartData.filter((dataPoint) => {
+      const filter = [];
+      chartData.forEach((dataPoint) => {
         const dataDate = new Date(dataPoint.date);
-        console.log(dataDate);
-        return (
+        if (
           dataDate >= new Date(dateRange.from) &&
           dataDate <= new Date(dateRange.to)
-        );
+        ) {
+          filter.push(dataPoint);
+        }
       });
-      setFilteredData(filteredData);
-      console.log("Filtered Data:", filteredData);
+      setFilteredData(filter);
+      console.log("Filtered Data:", chartData);
     }
   };
+
+  const periodContent =
+    new Intl.DateTimeFormat("en-GB").format(new Date(dateRange.from)) +
+    " to " +
+    new Intl.DateTimeFormat("en-GB").format(new Date(dateRange.to));
 
   return (
     <div>
@@ -150,9 +161,10 @@ export default function ChartAreaInteractive() {
       <Card className="pt-0">
         <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
           <div className="grid flex-1 gap-1">
-            <CardTitle>Area Chart - Interactive</CardTitle>
+            <CardTitle>Area Chart</CardTitle>
             <CardDescription>
-              Showing total visitors for the last 3 months
+              Showing total activities performed from{" "}
+              {dateRange.from === dateRange.to ? "all time." : periodContent}
             </CardDescription>
           </div>
         </CardHeader>
