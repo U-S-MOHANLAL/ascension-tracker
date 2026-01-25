@@ -26,8 +26,7 @@ import {
   DialogTrigger,
 } from "./ui/dialog";
 import { useEffect, useState } from "react";
-
-export const description = "An interactive area chart";
+import { Separator } from "./ui/separator";
 
 let chartData = [];
 
@@ -38,13 +37,13 @@ const chartConfig = {
   },
 };
 
-export default function ChartAreaInteractive() {
+export default function Dashboard() {
   const date = new Date();
   const [dateRange, setDateRange] = useState({ from: date, to: date });
   const [filteredData, setFilteredData] = useState(chartData);
   const prepareChartData = () => {
     const data = new Map();
-    const recordsRaw = localStorage.getItem("record");
+    const recordsRaw = localStorage.getItem("records");
     if (!recordsRaw) return;
     const records = JSON.parse(recordsRaw);
     for (const record of records) {
@@ -77,9 +76,7 @@ export default function ChartAreaInteractive() {
     prepareChartData();
   }, []);
   const processChartData = () => {
-    // Process chart data based on selected date range
     if (dateRange.to && dateRange.from) {
-      // Filter chartData based on dateRange
       const filter = [];
       chartData.forEach((dataPoint) => {
         const dataDate = new Date(dataPoint.date);
@@ -102,6 +99,12 @@ export default function ChartAreaInteractive() {
 
   return (
     <div>
+      <div>
+        <h1 className="mb-2 text-2xl justify-self-center mt-4">Dashboard</h1>
+      </div>
+      <div className="w-[15%] justify-self-center">
+        <Separator></Separator>
+      </div>
       <div className="justify-items-end m-5">
         <div className="flex">
           <Dialog>

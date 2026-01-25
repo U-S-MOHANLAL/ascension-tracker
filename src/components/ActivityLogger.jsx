@@ -31,11 +31,12 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import DeleteIcon from "@/assets/delete-1487-svgrepo-com.svg";
+import { Separator } from "./ui/separator";
 
 export default function ActivityLogger() {
   const dateClass = new Date();
-  const currentMonth = dateClass.getMonth()
-  const currentYear = dateClass.getFullYear()
+  const currentMonth = dateClass.getMonth();
+  const currentYear = dateClass.getFullYear();
   const [columnType, setColumnType] = useState("monthly");
   const storage = JSON.parse(localStorage.getItem("activities"))
     ? JSON.parse(localStorage.getItem("activities"))
@@ -47,11 +48,16 @@ export default function ActivityLogger() {
     },
   });
 
-  let [record, updateRecords] = useState(JSON.parse(localStorage.getItem("record")) ?? []);
+  let [records, updateRecords] = useState(
+    JSON.parse(localStorage.getItem("records")) ?? [],
+  );
   const getCurrentMonthDays = () => {
     let currentMonthDays = [...constants.MONTHLY_CALANDER[currentMonth]];
     if (currentMonth === 1) {
-      if ((currentYear % 4 === 0 && currentYear % 100 != 0) || currentYear % 400 === 0) {
+      if (
+        (currentYear % 4 === 0 && currentYear % 100 != 0) ||
+        currentYear % 400 === 0
+      ) {
         currentMonthDays.push(29);
       }
     }
@@ -63,19 +69,20 @@ export default function ActivityLogger() {
       weekly: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
       monthly: getCurrentMonthDays(),
     }),
-    []
+    [],
   );
 
   const onSubmit = (data) => {
     addActivities([...activities, data.activityName]);
     localStorage.setItem(
       "activities",
-      JSON.stringify([...activities, data.activityName])
+      JSON.stringify([...activities, data.activityName]),
     );
     form.reset();
   };
 
   const operateActivity = (value, index, isDelete) => {
+    const activity = activities[index];
     const data = [...activities];
     if (isDelete) {
       data.splice(index, 1);
@@ -86,16 +93,14 @@ export default function ActivityLogger() {
     localStorage.setItem("activities", JSON.stringify(data));
   };
 
-  const updateRecord = (check, activity, date) => {
+  const updaterecords = (check, activity, date) => {
     const checkList = [];
     checkList[date - 1] = check;
-    if (record.length) {
-      const data = [...record]
-      const currentYearRecord = data.find(
-        (x) => x.year === currentYear
-      );
+    if (records.length) {
+      const data = [...records];
+      const currentYearRecord = data.find((x) => x.year === currentYear);
       const currentMonthRecord = currentYearRecord.details.find(
-        (x) => x.month === currentMonth && x.activity === activity
+        (x) => x.month === currentMonth && x.activity === activity,
       );
       if (currentMonthRecord) {
         currentMonthRecord.checkList[date - 1] = check;
@@ -106,7 +111,7 @@ export default function ActivityLogger() {
           checkList,
         });
       }
-      updateRecords(data)
+      updateRecords(data);
     } else {
       updateRecords([
         {
@@ -119,27 +124,36 @@ export default function ActivityLogger() {
             },
           ],
         },
-      ])
+      ]);
     }
-    localStorage.setItem("record", JSON.stringify(record));
+    localStorage.setItem("records", JSON.stringify(records));
   };
 
-  const checkProvider = useCallback((activity, col) => {
-    if (record.length) {
-      const currentYearRecord = record.find(
-        (x) => x.year === currentYear
-      );
-      const currentMonthRecord = currentYearRecord.details.find(
-        (x) => x.month === currentMonth && x.activity === activity
-      );
-      if (currentMonthRecord) {
-        return currentMonthRecord.checkList[col - 1];
+  const checkProvider = useCallback(
+    (activity, col) => {
+      if (records.length) {
+        const currentYearRecord = records.find((x) => x.year === currentYear);
+        const currentMonthRecord = currentYearRecord.details.find(
+          (x) => x.month === currentMonth && x.activity === activity,
+        );
+        if (currentMonthRecord) {
+          return currentMonthRecord.checkList[col - 1];
+        }
       }
-    }
-  }, [record]);
+    },
+    [records],
+  );
 
   return (
     <>
+      <div className="text-center">
+        <h1 className="text-2xl justify-self-center mt-2 mb-2">
+          Activity Logger
+        </h1>
+      </div>
+      <div className="w-[15%] justify-self-center border-black">
+        <Separator></Separator>
+      </div>
       <div className="justify-items-end m-5">
         <div className="flex">
           <Dialog>
@@ -225,7 +239,7 @@ export default function ActivityLogger() {
                     <Checkbox
                       checked={checkProvider(activity, col)}
                       onCheckedChange={(val) => {
-                        updateRecord(val, activity, col);
+                        updaterecords(val, activity, col);
                       }}
                     ></Checkbox>
                   </TableCell>
